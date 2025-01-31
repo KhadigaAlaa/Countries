@@ -1,5 +1,10 @@
 
-namespace Countries
+using Countries.Services.BackJobWithHangfire;
+using Countries.Services;
+using Hangfire;
+using Hangfire.MemoryStorage;
+
+namespace IpAddress
 {
     public class Program
     {
@@ -8,41 +13,56 @@ namespace Countries
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddAuthorization();
+            builder.Services.AddControllers();
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
 
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
+            // Register application services
+            builder.Services.AddSingleton<BlockCountryService>();
+            builder.Services.AddSingleton<IpLookupService>();
+            builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
+            builder.Services.AddHttpClient();
+            builder.Services.AddHttpContextAccessor();
+
+            // Register Hangfire
+            builder.Services.AddHangfire(configuration =>
+     configuration.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+     .UseSimpleAssemblyNameTypeSerializer()
+     .UseDefaultTypeSerializer()
+     .UseMemoryStorage()); // Add this line to use in-memory storage
+
+            builder.Services.AddHangfireServer();
+
+
+            builder.Services.AddSingleton<BlockLogService>();
+            builder.Services.AddScoped<ITempBlockHangfire, TempBlockHangfire>();
+
 
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                app.MapOpenApi();
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
-
             app.UseAuthorization();
-
-            var summaries = new[]
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions
             {
-                "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-            };
+                DashboardTitle = "My Hangfire Dashboard"
+            });
 
-            app.MapGet("/weatherforecast", (HttpContext httpContext) =>
-            {
-                var forecast = Enumerable.Range(1, 5).Select(index =>
-                    new WeatherForecast
-                    {
-                        Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                        TemperatureC = Random.Shared.Next(-20, 55),
-                        Summary = summaries[Random.Shared.Next(summaries.Length)]
-                    })
-                    .ToArray();
-                return forecast;
-            })
-            .WithName("GetWeatherForecast");
+            // Schedule the recurring job every 5 minutes
+            RecurringJob.AddOrUpdate<BlockCountryService>(
+                "RemoveExpiredTemporaryBlocks",
+                s => s.RemoveExpiredTemporaryBlocks(),
+                Cron.MinuteInterval(5)
+            );
+
+
+            app.MapControllers();
 
             app.Run();
         }

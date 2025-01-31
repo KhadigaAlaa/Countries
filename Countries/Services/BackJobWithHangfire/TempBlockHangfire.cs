@@ -1,7 +1,8 @@
-﻿using IpAddress.Models;
+﻿using Countries.Models;
+using Countries.Services;
 using System.Collections.Concurrent;
 
-namespace IpAddress.Services.BackJobWithHangfire
+namespace Countries.Services.BackJobWithHangfire
 {
     public class TempBlockHangfire: ITempBlockHangfire
     {
@@ -25,7 +26,7 @@ namespace IpAddress.Services.BackJobWithHangfire
 
             _blockCountryService.UnblockCountry(countryCode);
             // Use the existing Unblock method
-            _blockCountryService.RemoveFromTemporaryBlockedCountries(countryCode); // Also remove from _temporalBlockedCountries1
+            _blockCountryService.RemoveFromTemporaryBlockedCountries(countryCode); 
 
         }
     }

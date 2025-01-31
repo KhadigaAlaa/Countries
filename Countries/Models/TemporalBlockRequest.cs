@@ -1,8 +1,8 @@
 ﻿namespace Countries.Models
 {
-    public class TemporalBlockedCountry
+    public class TemporalBlockRequest
     {
         public string CountryCode { get; set; }
-        public DateTime BlockedUntil { get; set; }
+        public int DurationMinutes { get; set; }
     }
 }

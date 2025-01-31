@@ -8,9 +8,12 @@ namespace Countries.Controllers
     public class BlockedCountryController : Controller
     {
         private readonly BlockCountryService _blockService;
-        public BlockedCountryController(BlockCountryService blockService)
+        private readonly BlockLogService _blockLogService;
+
+        public BlockedCountryController(BlockCountryService blockService, BlockLogService blockLogService)
         {
             _blockService = blockService;
+            _blockLogService = blockLogService; 
         }
 
         [HttpPost("block")]
@@ -29,6 +32,20 @@ namespace Countries.Controllers
 
         [HttpGet("blocked")]
         public IActionResult GetBlockedCountries() => Ok(_blockService.GetBlockedCountries());
+
+        [HttpGet("logs")]
+        public IActionResult GetBlockedAttempts(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string? countryCode = null,
+            [FromQuery] DateTime? fromDate = null,  
+            [FromQuery] DateTime? toDate = null,
+            [FromQuery] string? searchIp = null)
+        {
+            var logs = _blockLogService.GetBlockedAttemptLogs(page, pageSize, countryCode, fromDate, toDate, searchIp);
+            return Ok(logs);
+        }
+
 
     }
 }

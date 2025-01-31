@@ -1,7 +1,7 @@
-﻿using IpAddress.Models;
+﻿using Countries.Models;
 using System.Collections.Concurrent;
 
-namespace IpAddress.Services.BackJobWithHangfire
+namespace Countries.Services.BackJobWithHangfire
 {
     public interface ITempBlockHangfire
     {
