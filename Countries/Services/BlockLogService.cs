@@ -19,27 +19,9 @@ namespace Countries.Services
             });
         }
 
-        public IEnumerable<BlockedAttemptLog> GetBlockedAttemptLogs(
-            int page, int pageSize, string? countryCode = null, DateTime? fromDate = null,
-            DateTime? toDate = null, string? searchIp = null)
+        public IEnumerable<BlockedAttemptLog> GetBlockedAttemptLogs(int page, int pageSize)
         {
-            var query = _blockedAttemptLogs.AsQueryable();
-
-            // Filtering by Country Code
-            if (!string.IsNullOrEmpty(countryCode))
-                query = query.Where(log => log.CountryCode == countryCode);
-
-            // Filtering by Date Range
-            if (fromDate.HasValue)
-                query = query.Where(log => log.Timestamp >= fromDate.Value);
-
-            if (toDate.HasValue)
-                query = query.Where(log => log.Timestamp <= toDate.Value);
-
-            if (!string.IsNullOrEmpty(searchIp))
-                query = query.Where(log => log.IpAddress.Contains(searchIp));
-
-            return query.Skip((page - 1) * pageSize).Take(pageSize);
+            return _blockedAttemptLogs.Skip((page - 1) * pageSize).Take(pageSize);
         }
     }
 }

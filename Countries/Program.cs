@@ -4,7 +4,7 @@ using Countries.Services;
 using Hangfire;
 using Hangfire.MemoryStorage;
 
-namespace IpAddress
+namespace Countries
 {
     public class Program
     {
@@ -20,17 +20,17 @@ namespace IpAddress
 
             // Register application services
             builder.Services.AddSingleton<BlockCountryService>();
-            builder.Services.AddSingleton<IpLookupService>();
+            builder.Services.AddSingleton<IPLookupService>();
             builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
             builder.Services.AddHttpClient();
             builder.Services.AddHttpContextAccessor();
 
             // Register Hangfire
             builder.Services.AddHangfire(configuration =>
-     configuration.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-     .UseSimpleAssemblyNameTypeSerializer()
-     .UseDefaultTypeSerializer()
-     .UseMemoryStorage()); // Add this line to use in-memory storage
+             configuration.SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+             .UseSimpleAssemblyNameTypeSerializer()
+             .UseDefaultTypeSerializer()
+             .UseMemoryStorage()); // Add this line to use in-memory storage
 
             builder.Services.AddHangfireServer();
 
@@ -56,10 +56,10 @@ namespace IpAddress
 
             // Schedule the recurring job every 5 minutes
             RecurringJob.AddOrUpdate<BlockCountryService>(
-                "RemoveExpiredTemporaryBlocks",
-                s => s.RemoveExpiredTemporaryBlocks(),
-                Cron.MinuteInterval(5)
-            );
+              "RemoveExpiredTemporaryBlocks",
+              s => s.RemoveExpiredTemporaryBlocks(),
+              "*/5 * * * *" // Runs every 5 minutes
+              );
 
 
             app.MapControllers();

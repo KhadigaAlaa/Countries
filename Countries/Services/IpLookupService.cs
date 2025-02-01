@@ -2,12 +2,12 @@
 
 namespace Countries.Services
 {
-    public class IpLookupService
+    public class IPLookupService
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
 
-        public IpLookupService(HttpClient httpClient, IConfiguration configuration)
+        public IPLookupService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
             _configuration = configuration;

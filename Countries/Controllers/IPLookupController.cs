@@ -7,15 +7,15 @@ namespace Countries.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class IpController : ControllerBase
+    public class IPLookupController : ControllerBase
     {
-        private readonly IpLookupService _ipLookupService;
+        private readonly IPLookupService _ipLookupService;
         private readonly BlockCountryService _blockService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly BlockLogService _logService;
 
-        public IpController(
-            IpLookupService ipLookupService,
+        public IPLookupController(
+            IPLookupService ipLookupService,
             BlockCountryService blockService,
             BlockLogService logService,
             IHttpContextAccessor httpContextAccessor)
@@ -34,36 +34,6 @@ namespace Countries.Controllers
 
             var countryCode = await _ipLookupService.GetCountryCodeFromIpAsync(ipAddress);
             return countryCode != null ? Ok(new { ipAddress, countryCode }) : NotFound("Could not retrieve country.");
-        }
-
-        [HttpGet("check-block2")]
-        public async Task<IActionResult> CheckIpBlock2([FromQuery] string? ipAddress)
-        {
-            ipAddress ??= _httpContextAccessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
-
-            if (string.IsNullOrEmpty(ipAddress))
-            {
-                return BadRequest("Invalid IP address.");
-            }
-
-            // using the third-party 
-            var countryCode = await _ipLookupService.GetCountryCodeFromIpAsync(ipAddress);
-            if (countryCode == null)
-            {
-                return NotFound("Could not determine country.");
-            }
-
-            var isBlocked = _blockService.GetBlockedCountries().Contains(countryCode);
-
-            var userAgent = _httpContextAccessor.HttpContext?.Request.Headers["User-Agent"].ToString();
-            _logService.LogBlockedAttempt(ipAddress, countryCode, isBlocked, userAgent);
-
-            return Ok(new
-            {
-                ipAddress,
-                countryCode,
-                isBlocked
-            });
         }
 
         [HttpGet("check-block")]
@@ -96,13 +66,13 @@ namespace Countries.Controllers
 
 
         [HttpGet("logs/blocked-attempts")]
-        public IActionResult GetBlockedAttempts([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+        public IActionResult GetBlockedAttempts([FromQuery] int page = 1, [FromQuery] int pageSize = 3)
         {
             var logs = _logService.GetBlockedAttemptLogs(page, pageSize);
             return Ok(logs);
         }
 
-    
+
         [HttpPost("temporal-block")]
         public IActionResult TemporalBlockCountry([FromBody] TemporalBlockRequest request)
         {
@@ -128,7 +98,7 @@ namespace Countries.Controllers
             }
         }
 
-        
+       
 
 
     }
