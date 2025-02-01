@@ -3,7 +3,6 @@ using Countries.Services.BackJobWithHangfire;
 using Hangfire;
 using Hangfire.MemoryStorage;
 using Microsoft.OpenApi.Models;
-using System.Reflection;
 
 namespace Countries
 {
@@ -32,11 +31,6 @@ namespace Countries
                         Url = new Uri("https://github.com/KhadigaAlaa/Countries")
                     }
                 });
-
-                // Include XML comments for better documentation
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                options.IncludeXmlComments(xmlPath);
             });
 
             // Register application services
